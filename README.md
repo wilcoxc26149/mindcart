@@ -183,6 +183,8 @@ mindcart/
     mindcart.py
 ```
 
+Working checklist: [TODO.md](TODO.md).
+
 ## Roadmap
 
 - CLI polish
