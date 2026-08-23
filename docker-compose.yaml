@@ -1,0 +1,72 @@
+name: mindcart
+
+services:
+  falkordb:
+    image: falkordb/falkordb:latest
+    ports:
+      # Offset from cognee_falkordb (host 6380 / UI 3000) so both stacks can run.
+      # In-container both Falkor and Redis still listen on 6379.
+      - "6382:6379"
+      - "3001:3000" # FalkorDB Browser UI
+    # AOF so writes land on disk inside the mounted data dir (not only RAM)
+    environment:
+      REDIS_ARGS: "--appendonly yes"
+    volumes:
+      # Canonical path — do NOT mount /data (symlink; volume stays empty)
+      - falkordb_data:/var/lib/falkordb/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: cognee
+      POSTGRES_PASSWORD: cognee
+      POSTGRES_DB: cognee
+    ports:
+      - "5433:5432" # offset from cognee_falkordb host 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-pgvector.sql:/docker-entrypoint-initdb.d/01-pgvector.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cognee -d cognee"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  # Session cache — host 6381 (cognee_falkordb keeps standard 6379).
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # Optional: specialist vectors if pgvector is not enough later
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6334:6333" # offset from cognee_falkordb host 6333
+    volumes:
+      - qdrant_data:/qdrant/storage
+    profiles: ["qdrant"]
+    restart: unless-stopped
+
+volumes:
+  falkordb_data:
+  postgres_data:
+  redis_data:
+  qdrant_data:
