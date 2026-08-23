@@ -13,6 +13,7 @@ if str(_ROOT) not in sys.path:
 from src.ingestion import ingest, update
 from src.query import ask, remember
 from src.stack import stack_down, stack_status, stack_up
+from src.utils import load_config
 
 
 def _not_implemented(exc: NotImplementedError) -> int:
@@ -26,7 +27,7 @@ def main(argv: list[str] | None = None) -> int:
 
     stack_p = sub.add_parser("stack", help="Start/stop Cognee infra (Docker)")
     stack_sub = stack_p.add_subparsers(dest="stack_command", required=True)
-    up_p = stack_sub.add_parser("up", help="Bring FalkorDB, Postgres, and Redis online")
+    up_p = stack_sub.add_parser("up", help="Bring FalkorDB, Postgres, Redis, and Cognee API online")
     up_p.add_argument("--qdrant", action="store_true", help="Also start optional Qdrant")
     stack_sub.add_parser("down", help="Stop containers (keep named volumes)")
     stack_sub.add_parser("status", help="Show container status")
@@ -54,9 +55,11 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "ingest":
             ingest(args.path)
         elif args.command == "ask":
-            print(ask(args.question, tenant_id=""))
+            cfg = load_config()
+            print(ask(args.question, tenant_id=str(cfg.get("tenant_id") or "admin")))
         elif args.command == "remember":
-            remember(args.text, tenant_id="")
+            cfg = load_config()
+            remember(args.text, tenant_id=str(cfg.get("tenant_id") or "admin"))
         elif args.command == "update":
             update()
     except RuntimeError as exc:

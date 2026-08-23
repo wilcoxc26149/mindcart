@@ -1,4 +1,4 @@
-"""Docker Compose wrapper: bring Cognee infra (FalkorDB, Postgres, Redis) online."""
+"""Docker Compose wrapper: bring Cognee infra and API online."""
 
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPOSE_FILE = ROOT / "docker-compose.yaml"
-CORE_SERVICES = ("falkordb", "postgres", "redis")
+CORE_SERVICES = ("falkordb", "postgres", "redis", "cognee")
 
 PORT_CONFLICT_HINT = (
-    "A MindCart host port is already in use (5433, 6381, 6382, or 3001). "
-    "These are offset from cognee_falkordb (5432/6379/6380/3000) so both "
+    "A MindCart host port is already in use (8000, 5433, 6381, 6382, or 3001). "
+    "Backend ports are offset from cognee_falkordb (5432/6379/6380/3000) so both "
     "stacks can run at once. Check `docker compose ps` in this repo."
 )
 
@@ -54,6 +54,17 @@ def _is_port_conflict(text: str) -> bool:
     return any(marker in lowered for marker in _PORT_CONFLICT_MARKERS)
 
 
+def _safe_print(text: str | None, *, file=None) -> None:
+    if not text:
+        return
+    stream = file or sys.stdout
+    try:
+        print(text, end="", file=stream)
+    except UnicodeEncodeError:
+        encoding = getattr(stream, "encoding", None) or "utf-8"
+        print(text.encode(encoding, errors="replace").decode(encoding, errors="replace"), end="", file=stream)
+
+
 def _run_compose(args: list[str], *, capture: bool = False) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         args,
@@ -72,6 +83,7 @@ def _print_banner(*, qdrant: bool) -> None:
     print("  vector      pgvector @ localhost:5433/cognee")
     print("  relational  Postgres @ localhost:5433/cognee")
     print("  cache       Redis @ localhost:6381")
+    print("  api         http://localhost:8000")
     print("  ui          http://localhost:3001  (FalkorDB Browser)")
     if qdrant:
         print("  qdrant      Qdrant @ localhost:6334")
@@ -85,12 +97,19 @@ def stack_up(*, qdrant: bool = False) -> int:
     if qdrant:
         services.append("qdrant")
 
-    cmd = [*_compose_base(qdrant=qdrant), "up", "-d", "--wait", "--wait-timeout", "120", *services]
+    cmd = [
+        *_compose_base(qdrant=qdrant),
+        "up",
+        "-d",
+        "--build",
+        "--wait",
+        "--wait-timeout",
+        "300",
+        *services,
+    ]
     result = _run_compose(cmd, capture=True)
-    if result.stdout:
-        print(result.stdout, end="")
-    if result.stderr:
-        print(result.stderr, end="", file=sys.stderr)
+    _safe_print(result.stdout)
+    _safe_print(result.stderr, file=sys.stderr)
     if result.returncode != 0:
         combined = f"{result.stdout or ''}{result.stderr or ''}"
         if _is_port_conflict(combined):

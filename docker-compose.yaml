@@ -55,6 +55,54 @@ services:
       retries: 10
     restart: unless-stopped
 
+  cognee:
+    build:
+      context: ./docker/cognee
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      LLM_API_KEY: ${LLM_API_KEY:?set LLM_API_KEY in .env}
+      ENABLE_BACKEND_ACCESS_CONTROL: "false"
+      REQUIRE_AUTHENTICATION: "false"
+      CACHING: "true"
+      CACHE_BACKEND: redis
+      CACHE_HOST: redis
+      CACHE_PORT: "6379"
+      DB_PROVIDER: postgres
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USERNAME: cognee
+      DB_PASSWORD: cognee
+      DB_NAME: cognee
+      GRAPH_DATABASE_PROVIDER: falkor
+      GRAPH_DATABASE_URL: falkordb
+      GRAPH_DATABASE_PORT: "6379"
+      VECTOR_DB_PROVIDER: pgvector
+      VECTOR_DB_HOST: postgres
+      VECTOR_DB_PORT: "5432"
+      VECTOR_DB_NAME: cognee
+      VECTOR_DB_USERNAME: cognee
+      VECTOR_DB_PASSWORD: cognee
+      DATA_ROOT_DIRECTORY: /cognee-data/data
+      SYSTEM_ROOT_DIRECTORY: /cognee-data/system
+    volumes:
+      - cognee_data:/cognee-data
+    depends_on:
+      falkordb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
   # Optional: specialist vectors if pgvector is not enough later
   qdrant:
     image: qdrant/qdrant:latest
@@ -69,4 +117,5 @@ volumes:
   falkordb_data:
   postgres_data:
   redis_data:
+  cognee_data:
   qdrant_data:

@@ -63,11 +63,20 @@ Your project contains a `/mindcart` directory:
    /mindcart
 ```
 
-### 2. Start the Cognee Stack
+### 2. Configure MindCart
+
+Copy `.env.sample` to `.env` and set `LLM_API_KEY` (required for ingest/ask). Optional overrides:
+
+```bash
+COGNEE_API_URL=http://localhost:8000
+TENANT_ID=admin
+```
+
+### 3. Start the Cognee Stack
 
 ```bash
 mindcart stack up
-# equivalent: docker compose up -d falkordb postgres redis
+# equivalent: docker compose up -d falkordb postgres redis cognee
 ```
 
 This launches MindCart's own infra (independent volumes from cognee_falkordb):
@@ -75,17 +84,9 @@ This launches MindCart's own infra (independent volumes from cognee_falkordb):
 - FalkorDB (graph; UI on port 3001)
 - Postgres + pgvector (metadata + embeddings) on port 5433
 - Redis (session cache) on port 6381
+- Cognee API server on port 8000
 
-Host ports are offset so cognee_falkordb can stay up for `project_memory` while you develop MindCart. Qdrant is optional (`mindcart stack up --qdrant`, host 6334). The Cognee API server is not part of this infra stack yet.
-
-### 3. Configure MindCart
-
-Set environment variables:
-
-```bash
-COGNEE_API_URL=http://localhost:8000
-TENANT_ID=admin
-```
+Host ports are offset so cognee_falkordb can stay up for `project_memory` while you develop MindCart. Qdrant is optional (`mindcart stack up --qdrant`, host 6334).
 
 ### 4. Ingest the repo
 
