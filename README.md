@@ -1,92 +1,117 @@
-MindCart
+# MindCart
+
 A portable cognitive cartridge for any codebase.
-MindCart is a repo‑native cognitive module that gives any project long‑term memory, skills, rules, and contextual intelligence. Drop it into a repo, connect it to a Cognee backend, and your project instantly gains a shared knowledge graph, semantic memory, and multi‑tenant reasoning.
 
-MindCart is a bolt‑on brain that travels with the repo.
+MindCart is a repo-native cognitive module that gives any project long-term memory, skills, rules, and contextual intelligence. Drop it into a repo, connect it to a Cognee backend, and your project instantly gains a shared knowledge graph, semantic memory, and multi-tenant reasoning.
 
-Features
-Repo‑Local Cognitive Cartridge
+MindCart is a bolt-on brain that travels with the repo.
+
+## Features
+
+### Repo-Local Cognitive Cartridge
+
 MindCart lives inside your repo. Clone the repo → you clone the brain.
 
-Automatic Repo Ingestion
+### Automatic Repo Ingestion
+
 MindCart extracts documentation, code structure, architecture notes, workflows, skills, and rules, then sends them to the Cognee backend for indexing.
 
-Connects to Cognee Stack (Docker)
+### Connects to Cognee Stack (Docker)
+
 MindCart communicates with a Cognee instance that provides:
 
-FalkorDB (graph memory)
+- FalkorDB (graph memory)
+- Postgres + pgvector (metadata + embeddings)
+- Qdrant (optional vector store)
+- Cognee API server
 
-Postgres + pgvector (metadata + embeddings)
+### Multi-Tenant Memory
 
-Qdrant (optional vector store)
-
-Cognee API server
-
-Multi‑Tenant Memory
 Each user or agent gets:
 
-Shared read access to repo memory
+- Shared read access to repo memory
+- Private write access to their own memory layer
 
-Private write access to their own memory layer
+### Skill + Rule Installation
 
-Skill + Rule Installation
 MindCart automatically loads:
 
-/skills/*.yaml
-
-/rules/*.yaml
-
-/workflows/*.md
+- `/skills/*.yaml`
+- `/rules/*.yaml`
+- `/workflows/*.md`
 
 and registers them with the Cognee backend.
 
-Query Engine
+### Query Engine
+
 Ask the repo questions using natural language:
 
-Code
+```bash
 mindcart ask "How does the ingestion pipeline work?"
-MindCart merges shared repo memory with tenant‑specific memory and returns a contextual answer.
+```
 
-Quick Start
-1. Clone your repo
-Your project contains a /mindcart directory:
+MindCart merges shared repo memory with tenant-specific memory and returns a contextual answer.
 
-Code
+## Quick Start
+
+### 1. Clone your repo
+
+Your project contains a `/mindcart` directory:
+
+```text
 /my-project
    /mindcart
-2. Start the Cognee Stack
-Code
+```
+
+### 2. Start the Cognee Stack
+
+```bash
 docker compose up -d
+```
+
 This launches:
 
-Cognee API
+- Cognee API
+- FalkorDB
+- Postgres + pgvector
+- Qdrant (optional)
 
-FalkorDB
+### 3. Configure MindCart
 
-Postgres + pgvector
-
-Qdrant (optional)
-
-3. Configure MindCart
 Set environment variables:
 
-Code
+```bash
 COGNEE_API_URL=http://localhost:8000
 TENANT_ID=chris
-4. Ingest the repo
-Code
+```
+
+### 4. Ingest the repo
+
+```bash
 mindcart ingest .
-5. Query the repo brain
-Code
+```
+
+### 5. Query the repo brain
+
+```bash
 mindcart ask "Where is the deployment workflow defined?"
-6. Add personal memory
-Code
+```
+
+### 6. Add personal memory
+
+```bash
 mindcart remember "We use uv for local dev setup."
-7. Update memory when the repo changes
-Code
+```
+
+### 7. Update memory when the repo changes
+
+```bash
 mindcart update
-Architecture
-Code
+```
+
+## Architecture
+
+```text
                           ┌───────────────────────────┐
                           │        Your Repo           │
                           │  (code, docs, skills)      │
@@ -131,8 +156,11 @@ Code
           │  tenant: teammate1                           │
           │  tenant: agent42                             │
           └──────────────────────────────────────────────┘
-Recommended Project Structure
-Code
+```
+
+## Recommended Project Structure
+
+```text
 mindcart/
   config/
     mindcart.yaml
@@ -150,26 +178,25 @@ mindcart/
     utils.py
   cli/
     mindcart.py
-Roadmap
-CLI polish
+```
 
-Skill/rule validation
+## Roadmap
 
-Repo‑diff incremental ingestion
+- CLI polish
+- Skill/rule validation
+- Repo-diff incremental ingestion
+- Remote Cognee support
+- Agent SDK
+- VSCode extension
+- Multi-repo federation
+- MindCart cartridge marketplace
 
-Remote Cognee support
+## License
 
-Agent SDK
-
-VSCode extension
-
-Multi‑repo federation
-
-MindCart cartridge marketplace
-
-License
 MIT (or your preferred license)
 
-Contributing
+## Contributing
+
 MindCart is designed to be simple, modular, and hackable.
+
 PRs, issues, and discussions are welcome.
