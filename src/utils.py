@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 from pathlib import Path
 from typing import Any
@@ -33,8 +34,9 @@ def load_config(path: Path | None = None) -> dict[str, Any]:
 
 
 def file_hash(path: Path) -> str:
-    """Return a stable hash for ``path`` (used later for incremental ingest)."""
-    raise NotImplementedError("file_hash is not implemented yet")
+    """Return a stable SHA-256 hex digest of ``path`` contents (for incremental ingest)."""
+    with path.open("rb") as handle:
+        return hashlib.file_digest(handle, "sha256").hexdigest()
 
 
 def walk_globs(root: Path, globs: list[str]) -> list[Path]:
