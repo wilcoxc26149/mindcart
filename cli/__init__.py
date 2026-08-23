@@ -1,0 +1,1 @@
+"""MindCart command-line interface."""

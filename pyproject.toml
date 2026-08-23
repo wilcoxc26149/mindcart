@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mindcart"
+version = "0.1.0"
+description = "A portable cognitive cartridge for any codebase."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+dependencies = [
+    "httpx",
+    "pyyaml",
+]
+
+[project.scripts]
+mindcart = "cli.mindcart:main"
+
+[tool.setuptools.packages.find]
+include = ["src*", "cli*"]

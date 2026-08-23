@@ -66,15 +66,17 @@ Your project contains a `/mindcart` directory:
 ### 2. Start the Cognee Stack
 
 ```bash
-docker compose up -d
+mindcart stack up
+# equivalent: docker compose up -d falkordb postgres redis
 ```
 
-This launches:
+This launches MindCart's own infra (independent volumes from cognee_falkordb):
 
-- Cognee API
-- FalkorDB
-- Postgres + pgvector
-- Qdrant (optional)
+- FalkorDB (graph; UI on port 3001)
+- Postgres + pgvector (metadata + embeddings) on port 5433
+- Redis (session cache) on port 6381
+
+Host ports are offset so cognee_falkordb can stay up for `project_memory` while you develop MindCart. Qdrant is optional (`mindcart stack up --qdrant`, host 6334). The Cognee API server is not part of this infra stack yet.
 
 ### 3. Configure MindCart
 
@@ -82,7 +84,7 @@ Set environment variables:
 
 ```bash
 COGNEE_API_URL=http://localhost:8000
-TENANT_ID=chris
+TENANT_ID=admin
 ```
 
 ### 4. Ingest the repo
@@ -152,7 +154,7 @@ mindcart update
           ┌──────────────────────────────────────────────┐
           │                USERS / AGENTS                │
           ├──────────────────────────────────────────────┤
-          │  tenant: chris                               │
+          │  tenant: admin                               │
           │  tenant: teammate1                           │
           │  tenant: agent42                             │
           └──────────────────────────────────────────────┘
