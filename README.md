@@ -82,7 +82,7 @@ Set environment variables:
 
 ```bash
 COGNEE_API_URL=http://localhost:8000
-TENANT_ID=chris
+TENANT_ID=admin
 ```
 
 ### 4. Ingest the repo
@@ -152,7 +152,7 @@ mindcart update
           ┌──────────────────────────────────────────────┐
           │                USERS / AGENTS                │
           ├──────────────────────────────────────────────┤
-          │  tenant: chris                               │
+          │  tenant: admin                               │
           │  tenant: teammate1                           │
           │  tenant: agent42                             │
           └──────────────────────────────────────────────┘

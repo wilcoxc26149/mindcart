@@ -1,0 +1,15 @@
+# MindCart cartridge config. Env vars COGNEE_API_URL and TENANT_ID override these.
+
+cognee_api_url: http://localhost:8000
+tenant_id: admin
+
+datasets:
+  shared: repo_memory
+  tenant: tenant_memory
+
+ingest:
+  globs:
+    - docs/**/*.md
+    - skills/*.yaml
+    - rules/*.yaml
+    - workflows/*.md
