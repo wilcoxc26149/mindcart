@@ -9,6 +9,7 @@ datasets:
 
 ingest:
   globs:
+    - README.md
     - docs/**/*.md
     - skills/*.yaml
     - rules/*.yaml

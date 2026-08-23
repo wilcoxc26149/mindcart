@@ -12,10 +12,17 @@ requires-python = ">=3.12"
 dependencies = [
     "httpx",
     "pyyaml",
+    "python-dotenv",
 ]
+
+[project.optional-dependencies]
+dev = ["pytest"]
 
 [project.scripts]
 mindcart = "cli.mindcart:main"
 
 [tool.setuptools.packages.find]
 include = ["src*", "cli*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
