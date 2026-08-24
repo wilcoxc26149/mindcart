@@ -41,7 +41,8 @@ def main(argv: list[str] | None = None) -> int:
     remember_p = sub.add_parser("remember", help="Store a personal note in tenant memory")
     remember_p.add_argument("text", help="Note to remember")
 
-    sub.add_parser("update", help="Re-ingest changed repo files")
+    update_p = sub.add_parser("update", help="Re-ingest changed repo files")
+    update_p.add_argument("path", nargs="?", default=".", help="Repo path to update")
 
     args = parser.parse_args(argv)
 
@@ -61,7 +62,7 @@ def main(argv: list[str] | None = None) -> int:
             cfg = load_config()
             remember(args.text, tenant_id=str(cfg.get("tenant_id") or "admin"))
         elif args.command == "update":
-            update()
+            update(args.path)
     except RuntimeError as exc:
         print(str(exc), file=sys.stderr)
         return 1

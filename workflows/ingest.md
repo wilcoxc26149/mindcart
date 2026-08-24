@@ -5,4 +5,4 @@
 3. Run `mindcart ingest .` to index README, docs, skills, rules, and workflows into shared `repo_memory`.
 4. Ask questions with `mindcart ask "…"`.
 5. Store a personal note with `mindcart remember "…"`.
-6. After repo changes, run `mindcart update` (not implemented yet).
+6. After repo changes, run `mindcart update` (or `mindcart update .`). Unchanged files are skipped. Added files are remembered, changed files are patched via Cognee `data_id`, and removed files are forgotten. MindCart stores that mapping in `.mindcart/ingest_index.json` (gitignored). If the index is missing, `update` runs a full ingest first.
