@@ -14,13 +14,10 @@ Work top to bottom. Priority is P0 (next) → P1 (product holes) → P2 (roadmap
 - [x] HTTP wrappers for Cognee `/api/v1/remember` and `/api/v1/recall`
 - [x] Unit tests for api, tenants, utils
 - [x] Implement `file_hash` in `src/utils.py` (SHA-256 of file contents). Prerequisite for diff-based update.
+- [x] Tests for ingestion, query, stack, and CLI. Lock current behavior before `update()` lands.
+- [x] Implement `update()` / `mindcart update` in `src/ingestion.py` (repo-diff incremental ingest). Depends on `file_hash`.
 
 ## Now
-
-### P0 — unblock incremental ingest
-
-2. [ ] Tests for ingestion, query, stack, and CLI. Lock current behavior before `update()` lands.
-3. [ ] Implement `update()` / `mindcart update` in `src/ingestion.py` (repo-diff incremental ingest). Depends on `file_hash`.
 
 ### P1 — claimed product that is still missing
 
