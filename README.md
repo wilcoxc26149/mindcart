@@ -236,7 +236,6 @@ The e2e test clones [cognee](https://github.com/topoteretes/cognee.git), clones 
 
 ## Roadmap
 
-- CLI polish
 - Skill/rule validation
 - Repo-diff incremental ingestion
 - Remote Cognee support

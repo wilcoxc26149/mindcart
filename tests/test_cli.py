@@ -1,5 +1,7 @@
 """Unit tests for the mindcart CLI dispatch."""
 
+import pytest
+
 from cli.mindcart import main
 
 
@@ -99,4 +101,44 @@ def test_cli_runtime_error_exits_one(monkeypatch, capsys):
         lambda path: (_ for _ in ()).throw(RuntimeError("No files matched")),
     )
     assert main(["ingest", "."]) == 1
-    assert "No files matched" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert err.startswith("mindcart: ")
+    assert "No files matched" in err
+
+
+def test_cli_keyboard_interrupt_exits_130(monkeypatch):
+    monkeypatch.setattr(
+        "cli.mindcart.ingest",
+        lambda path: (_ for _ in ()).throw(KeyboardInterrupt()),
+    )
+    assert main(["ingest", "."]) == 130
+
+
+def test_cli_no_args_prints_help(capsys):
+    assert main([]) == 0
+    out = capsys.readouterr().out
+    assert "usage: mindcart" in out
+    assert "mindcart stack up" in out
+
+
+def test_cli_help_includes_example(capsys):
+    with pytest.raises(SystemExit) as exc:
+        main(["--help"])
+    assert exc.value.code == 0
+    assert "mindcart stack up" in capsys.readouterr().out
+
+
+def test_cli_install_help_mentions_project_root(capsys):
+    with pytest.raises(SystemExit) as exc:
+        main(["install", "--help"])
+    assert exc.value.code == 0
+    out = capsys.readouterr().out
+    assert "PROJECT_ROOT" in out
+    assert "--target" in out
+
+
+def test_cli_stack_without_subcommand_prints_help(capsys):
+    assert main(["stack"]) == 0
+    out = capsys.readouterr().out
+    assert "up" in out
+    assert "down" in out

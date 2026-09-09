@@ -116,11 +116,12 @@ def test_project_root_uses_config_when_no_target(tmp_path):
 
 def test_project_root_missing_raises(tmp_path):
     missing = tmp_path / "nope"
-    with pytest.raises(RuntimeError, match="does not exist"):
+    with pytest.raises(RuntimeError, match="does not exist") as exc:
         catalog.resolve_project_root(missing)
+    assert "--target" in str(exc.value)
 
 
-def test_install_writes_cursor_skill_and_rule(tmp_path, monkeypatch):
+def test_install_writes_cursor_skill_and_rule(tmp_path, monkeypatch, capsys):
     cartridge = tmp_path / "cartridge"
     host = tmp_path / "host"
     (cartridge / "skills").mkdir(parents=True)
@@ -132,6 +133,11 @@ def test_install_writes_cursor_skill_and_rule(tmp_path, monkeypatch):
 
     dest = catalog.install(target=host)
     assert dest == host.resolve()
+    captured = capsys.readouterr()
+    assert f"Installing into {host.resolve()}" in captured.out
+    assert "1 skill(s) and 1 rule(s)" in captured.out
+    assert str(host.resolve() / ".cursor") in captured.out
+    assert "standalone checkouts" not in captured.err
 
     skill_md = host / ".cursor" / "skills" / "ask" / "SKILL.md"
     rule_mdc = host / ".cursor" / "rules" / "recall-first.mdc"
@@ -144,6 +150,22 @@ def test_install_writes_cursor_skill_and_rule(tmp_path, monkeypatch):
     rule_text = rule_mdc.read_text(encoding="utf-8")
     assert "alwaysApply: true" in rule_text
     assert "mindcart ask" in rule_text
+
+
+def test_install_warns_on_implicit_parent_default(tmp_path, monkeypatch, capsys):
+    cartridge = tmp_path / "mindcart"
+    (cartridge / "skills").mkdir(parents=True)
+    (cartridge / "rules").mkdir()
+    (cartridge / "skills" / "ask.yaml").write_text(_skill_yaml(), encoding="utf-8")
+    monkeypatch.setattr(catalog, "ROOT", cartridge)
+    monkeypatch.setattr(catalog, "load_config", lambda: {})
+
+    dest = catalog.install()
+    assert dest == tmp_path.resolve()
+    captured = capsys.readouterr()
+    assert f"Installing into {tmp_path.resolve()}" in captured.out
+    assert "1 skill(s) and 0 rule(s)" in captured.out
+    assert "standalone checkouts should pass --target or PROJECT_ROOT=." in captured.err
 
 
 def test_install_rejects_invalid_skill(tmp_path, monkeypatch):

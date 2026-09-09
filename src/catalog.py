@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -137,10 +138,26 @@ def format_rule_ingest(rule: dict[str, Any], rel: str) -> str:
 
 def install(*, target: str | Path | None = None) -> Path:
     """Validate cartridge YAML and write Cursor skills/rules under PROJECT_ROOT."""
-    project_root = resolve_project_root(target)
+    implicit_parent = False
+    if target is None:
+        cfg = load_config()
+        implicit_parent = not str(cfg.get("project_root") or "").strip()
+        project_root = resolve_project_root(target, config=cfg)
+    else:
+        project_root = resolve_project_root(target)
+
+    print(f"Installing into {project_root}")
+    if implicit_parent:
+        print(
+            "warning: using parent of this cartridge as PROJECT_ROOT; "
+            "standalone checkouts should pass --target or PROJECT_ROOT=.",
+            file=sys.stderr,
+        )
+
     skills_root = project_root / ".cursor" / "skills"
     rules_root = project_root / ".cursor" / "rules"
-    written = 0
+    skill_count = 0
+    rule_count = 0
 
     for path in iter_yaml_files(ROOT / "skills"):
         skill = load_skill(path)
@@ -148,7 +165,7 @@ def install(*, target: str | Path | None = None) -> Path:
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(render_skill_md(skill), encoding="utf-8")
         print(f"Installed skill {skill['id']} -> {dest}")
-        written += 1
+        skill_count += 1
 
     for path in iter_yaml_files(ROOT / "rules"):
         rule = load_rule(path)
@@ -156,19 +173,25 @@ def install(*, target: str | Path | None = None) -> Path:
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(render_rule_mdc(rule), encoding="utf-8")
         print(f"Installed rule {rule['id']} -> {dest}")
-        written += 1
+        rule_count += 1
 
-    if written == 0:
+    if skill_count == 0 and rule_count == 0:
         print(f"No skills or rules to install under {ROOT}")
+    print(
+        f"Installed {skill_count} skill(s) and {rule_count} rule(s) into {project_root / '.cursor'}"
+    )
     return project_root
+
+
+_PROJECT_ROOT_HINT = "Set --target, PROJECT_ROOT, or project_root in config."
 
 
 def _existing_dir(path: Path, *, label: str) -> Path:
     resolved = path.expanduser().resolve()
     if not resolved.exists():
-        raise RuntimeError(f"{label} does not exist: {resolved}")
+        raise RuntimeError(f"{label} does not exist: {resolved}. {_PROJECT_ROOT_HINT}")
     if not resolved.is_dir():
-        raise RuntimeError(f"{label} is not a directory: {resolved}")
+        raise RuntimeError(f"{label} is not a directory: {resolved}. {_PROJECT_ROOT_HINT}")
     return resolved
 
 
