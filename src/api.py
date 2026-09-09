@@ -1,4 +1,4 @@
-"""HTTP wrappers for the Cognee API (remember/recall/update/forget)."""
+"""HTTP wrappers for the Cognee API (remember/recall/update/forget/improve)."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ REMEMBER_TIMEOUT = 600.0
 RECALL_TIMEOUT = 120.0
 UPDATE_TIMEOUT = 600.0
 FORGET_TIMEOUT = 120.0
+IMPROVE_TIMEOUT = 600.0
 
 
 def _base_url() -> str:
@@ -103,6 +104,22 @@ def forget(*, dataset: str, data_id: str) -> dict[str, Any]:
     payload = {"dataset": dataset, "data_id": data_id}
     try:
         with httpx.Client(timeout=FORGET_TIMEOUT) as client:
+            response = client.post(url, json=payload)
+    except httpx.RequestError as exc:
+        raise RuntimeError(f"Cognee API unreachable at {_base_url()}: {exc}") from exc
+    _raise_for_status(response)
+    return _parse_json(response)
+
+
+def improve(dataset_name: str) -> dict[str, Any]:
+    """Enrich an existing Cognee dataset via ``POST /api/v1/improve``."""
+    name = dataset_name.strip()
+    if not name:
+        raise RuntimeError("improve requires a dataset name")
+    url = f"{_base_url()}/api/v1/improve"
+    payload = {"dataset_name": name, "run_in_background": False}
+    try:
+        with httpx.Client(timeout=IMPROVE_TIMEOUT) as client:
             response = client.post(url, json=payload)
     except httpx.RequestError as exc:
         raise RuntimeError(f"Cognee API unreachable at {_base_url()}: {exc}") from exc

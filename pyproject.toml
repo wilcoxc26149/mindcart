@@ -26,3 +26,7 @@ include = ["src*", "cli*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+markers = [
+    "e2e: host-cartridge end-to-end tests (clone remotes; use --run-e2e)",
+    "network: tests that need network access",
+]

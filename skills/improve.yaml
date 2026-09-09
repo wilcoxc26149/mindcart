@@ -1,0 +1,31 @@
+id: improve
+name: improve
+description: >-
+  Enrich an existing Cognee dataset with improve(). Use when the user says
+  improve dataset, run improve, or enrich the graph. Default dataset is
+  shared repo_memory.
+body: |
+  # Improve
+
+  Run Cognee `improve()` on the shared repo memory dataset.
+
+  ## When to use
+
+  - Enrich graph/retrieval structures already in a dataset
+  - After ingest when retrieval quality needs a boost
+
+  Do **not** use for: standalone remember, or wiping Cognee volumes.
+
+  ## Workflow
+
+  ```bash
+  mindcart improve
+  ```
+
+  Default dataset is shared `repo_memory`.
+
+  ## Hard rules
+
+  - Call `mindcart improve` — do not add remember-then-improve combo flags.
+  - Stack must be up; `.env` needs `LLM_API_KEY`.
+  - `improve()` needs an existing dataset with remembered content.

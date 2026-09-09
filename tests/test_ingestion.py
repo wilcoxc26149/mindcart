@@ -199,6 +199,60 @@ def test_update_change_calls_update_data_not_remember(tmp_path, monkeypatch):
     assert saved["files"]["README.md"]["data_id"] == "id-readme"
 
 
+def test_ingest_sends_structured_skill_not_raw_yaml(tmp_path, monkeypatch):
+    def cfg():
+        return {
+            "tenant_id": "admin",
+            "datasets": {"shared": "repo_memory", "tenant": "tenant_memory"},
+            "ingest": {"globs": ["skills/*.yaml"]},
+        }
+
+    monkeypatch.setattr(ingestion, "load_config", cfg)
+    monkeypatch.setattr(ingestion, "shared_dataset", lambda _tid: "repo_memory")
+    skills = tmp_path / "skills"
+    skills.mkdir()
+    (skills / "ask.yaml").write_text(
+        "id: ask\nname: ask\ndescription: Recall from MindCart.\nbody: |\n  Run mindcart ask.\n",
+        encoding="utf-8",
+    )
+    captured: dict = {}
+
+    def fake_remember(docs, dataset_name, filenames=None):
+        captured["docs"] = docs
+        captured["filenames"] = filenames
+        return {
+            "dataset_id": "ds-1",
+            "items": [{"id": "id-ask", "name": "skills/ask.yaml"}],
+        }
+
+    monkeypatch.setattr(ingestion, "remember", fake_remember)
+    ingestion.ingest(str(tmp_path))
+    assert captured["filenames"] == ["skills/ask.yaml"]
+    doc = captured["docs"][0]
+    assert doc.startswith("MindCart skill (skills/ask.yaml)")
+    assert "id: ask" in doc
+    assert "Run mindcart ask." in doc
+    assert "Source file:" not in doc
+    assert "body: |" not in doc
+
+
+def test_ingest_rejects_invalid_skill_yaml(tmp_path, monkeypatch):
+    def cfg():
+        return {
+            "tenant_id": "admin",
+            "datasets": {"shared": "repo_memory", "tenant": "tenant_memory"},
+            "ingest": {"globs": ["skills/*.yaml"]},
+        }
+
+    monkeypatch.setattr(ingestion, "load_config", cfg)
+    monkeypatch.setattr(ingestion, "shared_dataset", lambda _tid: "repo_memory")
+    skills = tmp_path / "skills"
+    skills.mkdir()
+    (skills / "bad.yaml").write_text("id: bad\nname: bad\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="missing required field"):
+        ingestion.ingest(str(tmp_path))
+
+
 def test_update_remove_calls_forget(tmp_path, monkeypatch):
     monkeypatch.setattr(ingestion, "load_config", _cfg)
     monkeypatch.setattr(ingestion, "shared_dataset", lambda _tid: "repo_memory")

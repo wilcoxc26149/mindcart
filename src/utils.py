@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def load_config(path: Path | None = None) -> dict[str, Any]:
-    """Load ``config/mindcart.yaml``, with env overrides for API URL and tenant."""
+    """Load ``config/mindcart.yaml``, with env overrides for API URL, tenant, and PROJECT_ROOT."""
     load_dotenv(ROOT / ".env", override=False)
     cfg_path = path or ROOT / "config" / "mindcart.yaml"
     if not cfg_path.is_file():
@@ -27,6 +27,8 @@ def load_config(path: Path | None = None) -> dict[str, Any]:
         data["cognee_api_url"] = os.environ["COGNEE_API_URL"].rstrip("/")
     if os.getenv("TENANT_ID"):
         data["tenant_id"] = os.environ["TENANT_ID"]
+    if os.getenv("PROJECT_ROOT"):
+        data["project_root"] = os.environ["PROJECT_ROOT"]
     data.setdefault("cognee_api_url", "http://localhost:8000")
     data.setdefault("tenant_id", "admin")
     data["cognee_api_url"] = str(data["cognee_api_url"]).rstrip("/")

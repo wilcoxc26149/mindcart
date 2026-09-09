@@ -34,13 +34,21 @@ Each user or agent gets:
 
 ### Skill + Rule Installation
 
-MindCart automatically loads:
+Cartridge YAML in `/skills/*.yaml` and `/rules/*.yaml` is validated, then:
 
-- `/skills/*.yaml`
-- `/rules/*.yaml`
-- `/workflows/*.md`
+- Indexed as structured blurbs on `mindcart ingest` (not a raw YAML dump)
+- Installed into the **host** project for Cursor:
 
-and registers them with the Cognee backend.
+```bash
+mindcart install
+# or: mindcart install --target C:\work\other-app
+```
+
+That writes `$PROJECT_ROOT/.cursor/skills/{id}/SKILL.md` and `$PROJECT_ROOT/.cursor/rules/{id}.mdc`.
+
+`PROJECT_ROOT` is the project Cursor should see. Resolution order: `--target`, then `PROJECT_ROOT` env, then `project_root` in `config/mindcart.yaml`, then the parent of the `mindcart/` cartridge.
+
+Shipped catalog: `ask`, `remember`, `improve`, and an always-on `recall-first` rule (`mindcart ask` before answering from the model). The `mindcart-todo` skill stays in this repo only — it is not installed into the host.
 
 ### Query Engine
 
@@ -70,6 +78,8 @@ Copy `.env.sample` to `.env` and set `LLM_API_KEY` (required for ingest/ask). Op
 ```bash
 COGNEE_API_URL=http://localhost:8000
 TENANT_ID=admin
+# Host project for Cursor skills/rules (default: parent of this cartridge)
+# PROJECT_ROOT=C:\work\other-app
 ```
 
 ### 3. Start the Cognee Stack
@@ -102,8 +112,11 @@ mindcart ask "Where is the deployment workflow defined?"
 
 ### 6. Add personal memory
 
+Text **or** a file (not both). Both land in tenant memory:
+
 ```bash
 mindcart remember "We use uv for local dev setup."
+mindcart remember --file docs/note.md
 ```
 
 ### 7. Update memory when the repo changes
@@ -111,6 +124,14 @@ mindcart remember "We use uv for local dev setup."
 ```bash
 mindcart update
 ```
+
+### 8. Install Cursor skills and rules into the host
+
+```bash
+mindcart install
+```
+
+Agents should recall first (`mindcart ask "…"`) before answering from the model. If memory is missing or stale, run `mindcart ingest` or `mindcart update`. Enrich an existing dataset with `mindcart improve` (shared `repo_memory` by default).
 
 ## Architecture
 
@@ -174,6 +195,8 @@ mindcart/
   workflows/
     *.md
   src/
+    catalog.py
+    configure.py
     ingestion.py
     tenants.py
     query.py
@@ -181,9 +204,35 @@ mindcart/
     utils.py
   cli/
     mindcart.py
+  scripts/
+    configure.py
+    configure_env.py
+    configure_cursor.py
 ```
 
 Working checklist: [TODO.md](TODO.md).
+
+## Testing
+
+From the cartridge root, create a venv and install the dev extra (includes pytest):
+
+```bash
+uv venv
+uv pip install -e ".[dev]"
+source .venv/bin/activate          # WSL / macOS / Linux
+# .venv\Scripts\activate           # Windows PowerShell
+```
+
+Then:
+
+```bash
+pytest
+pytest --run-e2e tests/test_e2e_cognee_host.py
+```
+
+Without activating: `.venv/bin/pytest` (or `.venv\Scripts\pytest.exe` on Windows). Do not `apt install python3-pytest` — that is a different, system-wide package.
+
+The e2e test clones [cognee](https://github.com/topoteretes/cognee.git), clones this cartridge into it, and runs `scripts/configure_env.py` plus `scripts/configure_cursor.py`.
 
 ## Roadmap
 

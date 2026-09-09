@@ -1,0 +1,29 @@
+id: recall-first
+name: Recall first
+description: Recall from MindCart before answering from the model
+always_apply: true
+body: |
+  # Recall first (repo_memory + tenant)
+
+  This repo's durable knowledge lives in Cognee datasets `repo_memory` (shared)
+  and `tenant_memory_{id}` (private), not in chat history.
+
+  **Before you answer a question from model knowledge or chat**, recall:
+
+  ```bash
+  mindcart ask "the user's question"
+  ```
+
+  Then answer from that recall. If recall is empty, errors, or clearly off-topic,
+  say so briefly and only then use docs / the LLM. Do not skip recall because
+  you think you already know the stack.
+
+  Use recall for: stack choice, APIs, datasets, demo narrative, licensing,
+  scale-out, what was remembered, and any "what did we decide / what's true here"
+  question.
+
+  Skip recall for: mechanical edits the user already specified, git/PR mechanics,
+  and questions that are only about the current uncommitted diff.
+
+  If memory is missing or stale, tell the user to run `mindcart ingest` or
+  `mindcart update`.
