@@ -11,9 +11,25 @@ def test_load_config_reads_yaml_and_env(tmp_path, monkeypatch):
     )
     monkeypatch.setenv("COGNEE_API_URL", "http://example.test:9000/")
     monkeypatch.setenv("TENANT_ID", "teammate1")
+    monkeypatch.setenv("PROJECT_ROOT", "C:/from-env")
     data = load_config(cfg_path)
     assert data["cognee_api_url"] == "http://example.test:9000"
     assert data["tenant_id"] == "teammate1"
+    assert data["project_root"] == "C:/from-env"
+
+
+def test_load_config_project_root_env_overrides_yaml(tmp_path, monkeypatch):
+    cfg_path = tmp_path / "mindcart.yaml"
+    cfg_path.write_text("project_root: C:/from-yaml\n", encoding="utf-8")
+    monkeypatch.setenv("PROJECT_ROOT", "C:/from-env")
+    assert load_config(cfg_path)["project_root"] == "C:/from-env"
+
+
+def test_load_config_project_root_from_yaml(tmp_path, monkeypatch):
+    cfg_path = tmp_path / "mindcart.yaml"
+    cfg_path.write_text("project_root: C:/from-yaml\n", encoding="utf-8")
+    monkeypatch.delenv("PROJECT_ROOT", raising=False)
+    assert load_config(cfg_path)["project_root"] == "C:/from-yaml"
 
 
 def test_file_hash_is_stable_sha256_of_contents(tmp_path):

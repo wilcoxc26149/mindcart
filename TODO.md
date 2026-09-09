@@ -16,12 +16,12 @@ Work top to bottom. Priority is P0 (next) → P1 (product holes) → P2 (roadmap
 - [x] Implement `file_hash` in `src/utils.py` (SHA-256 of file contents). Prerequisite for diff-based update.
 - [x] Tests for ingestion, query, stack, and CLI. Lock current behavior before `update()` lands.
 - [x] Implement `update()` / `mindcart update` in `src/ingestion.py` (repo-diff incremental ingest). Depends on `file_hash`.
+- [x] Validate `skills/*.yaml` and `rules/*.yaml`, install them into `$PROJECT_ROOT/.cursor/`, and add `remember --file` plus `mindcart improve`.
 
 ## Now
 
 ### P1 — claimed product that is still missing
 
-4. [ ] Validate `skills/*.yaml` and `rules/*.yaml` instead of only dumping them as text.
 5. [ ] Expand ingest beyond README/docs/skills/rules/workflows so code structure is actually indexed.
 6. [ ] CLI polish (help text, errors, install path).
 

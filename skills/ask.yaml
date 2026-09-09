@@ -1,0 +1,41 @@
+id: ask
+name: ask
+description: >-
+  Recall from MindCart shared repo_memory plus tenant memory. Use when the
+  user asks what's true here, what we decided, or any question that should
+  come from project memory rather than the model.
+body: |
+  # Ask
+
+  Recall from MindCart before answering from the model.
+
+  Datasets: shared `repo_memory` and private `tenant_memory_{id}`.
+
+  ## When to use
+
+  - User asks what is true in this project
+  - Stack, APIs, datasets, decisions, licensing, remembered notes
+  - Any "what did we decide" question
+
+  Do **not** use for: mechanical edits the user already specified, git/PR
+  mechanics, or questions only about the current uncommitted diff.
+
+  ## Workflow
+
+  1. Run:
+
+  ```bash
+  mindcart ask "the user's question"
+  ```
+
+  2. Answer from that recall. If recall is empty, errors, or clearly off-topic,
+     say so briefly and only then use docs / the LLM.
+
+  3. If memory is missing or stale, tell the user to run `mindcart ingest`
+     or `mindcart update`.
+
+  ## Hard rules
+
+  - Call `mindcart ask` — do not call Cognee scripts from another repo.
+  - Stack must be up (`mindcart stack up`); `.env` needs `LLM_API_KEY`.
+  - Do not skip recall because you think you already know the stack.

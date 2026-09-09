@@ -165,6 +165,33 @@ def test_recall_formats_list(monkeypatch):
     assert result == "[1] The pipeline walks globs."
 
 
+def test_improve_posts_json(monkeypatch):
+    monkeypatch.setattr(api, "load_config", lambda: {"cognee_api_url": "http://localhost:8000"})
+    captured = {}
+
+    class FakeClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def post(self, url, data=None, files=None, json=None):
+            captured["url"] = url
+            captured["json"] = json
+            return _FakeResponse(status_code=200, payload={"status": "ok"}, url=url)
+
+    with patch("src.api.httpx.Client", FakeClient):
+        result = api.improve("repo_memory")
+
+    assert captured["url"] == "http://localhost:8000/api/v1/improve"
+    assert captured["json"] == {"dataset_name": "repo_memory", "run_in_background": False}
+    assert result["status"] == "ok"
+
+
 def test_remember_raises_on_http_error(monkeypatch):
     monkeypatch.setattr(api, "load_config", lambda: {"cognee_api_url": "http://localhost:8000"})
 

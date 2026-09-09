@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from src.api import forget, remember, update_data
+from src.catalog import ingest_document
 from src.tenants import shared_dataset
 from src.utils import file_hash, load_config, walk_globs
 
@@ -115,8 +116,7 @@ def _collect_files(root: Path) -> list[tuple[str, Path, str, str]]:
             rel = file.relative_to(root).as_posix()
         except ValueError:
             rel = file.name
-        body = file.read_text(encoding="utf-8")
-        rows.append((rel, file, file_hash(file), f"Source file: {rel}\n\n{body}"))
+        rows.append((rel, file, file_hash(file), ingest_document(file, rel)))
     return rows
 
 

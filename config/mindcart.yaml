@@ -1,7 +1,10 @@
-# MindCart cartridge config. Env vars COGNEE_API_URL and TENANT_ID override these.
+# MindCart cartridge config. Env vars COGNEE_API_URL, TENANT_ID, and PROJECT_ROOT
+# override these. mindcart install --target overrides project_root for one run.
+# When project_root is unset, install writes to the parent of this cartridge.
 
 cognee_api_url: http://localhost:8000
 tenant_id: admin
+# project_root: C:\work\other-app
 
 datasets:
   shared: repo_memory

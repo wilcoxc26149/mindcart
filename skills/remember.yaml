@@ -1,0 +1,39 @@
+id: remember
+name: remember
+description: >-
+  Persist a vetted note or local file into tenant memory
+  (tenant_memory_{id}). Use when the user says remember this, store this
+  insight, or remember this file — not for full repo ingest.
+body: |
+  # Remember
+
+  Store a personal note or one file in tenant memory.
+
+  ## When to use
+
+  - User wants to remember a finding, decision, or note
+  - User wants to ingest one file into tenant memory
+
+  Do **not** use for: dumping the whole repo (`mindcart ingest` / `mindcart update`).
+
+  ## Workflow
+
+  Text **or** file, not both. Both land in **tenant** memory (`tenant_memory_{id}`):
+
+  ```bash
+  mindcart remember "We use uv for local setup."
+  mindcart remember --file docs/note.md
+  ```
+
+  Verify with:
+
+  ```bash
+  mindcart ask "question that should surface the note"
+  ```
+
+  ## Hard rules
+
+  - One of text or `--file`, never both.
+  - Reject empty text and missing files.
+  - Stack must be up; `.env` needs `LLM_API_KEY`.
+  - Full repo indexing stays `mindcart ingest` / `mindcart update`.
