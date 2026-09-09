@@ -214,11 +214,10 @@ Working checklist: [TODO.md](TODO.md).
 
 ## Testing
 
-From the cartridge root, create a venv and install the dev extra (includes pytest):
+From the cartridge root, sync the lockfile (creates `.venv` and installs the project plus the `dev` extra, including pytest):
 
 ```bash
-uv venv
-uv pip install -e ".[dev]"
+uv sync --extra dev
 source .venv/bin/activate          # WSL / macOS / Linux
 # .venv\Scripts\activate           # Windows PowerShell
 ```
@@ -233,6 +232,29 @@ pytest --run-e2e tests/test_e2e_cognee_host.py
 Without activating: `.venv/bin/pytest` (or `.venv\Scripts\pytest.exe` on Windows). Do not `apt install python3-pytest` — that is a different, system-wide package.
 
 The e2e test clones [cognee](https://github.com/topoteretes/cognee.git), clones this cartridge into it, and runs `scripts/configure_env.py` plus `scripts/configure_cursor.py`.
+
+## Dependencies
+
+Python version ranges live in `pyproject.toml`; exact resolved versions are in `uv.lock`. Generated `*.egg-info/` is not a source of truth.
+
+Check what is outdated, then bump and reinstall:
+
+```bash
+uv tree --outdated --depth 1 --extra dev
+uv lock --upgrade
+uv sync --extra dev
+pytest
+```
+
+Bump one package: `uv lock --upgrade-package httpx` then `uv sync --extra dev`.
+
+Docker image tags are pinned in `docker-compose.yaml`. The Cognee image (`FROM`), uv binary, and extra pip packages are pinned in `docker/cognee/Dockerfile`. To bump them, look up newer tags, edit those files, then rebuild:
+
+```bash
+mindcart stack up
+# or: docker compose build --no-cache cognee && mindcart stack up
+mindcart stack status
+```
 
 ## Roadmap
 

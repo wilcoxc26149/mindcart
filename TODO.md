@@ -25,6 +25,8 @@ Work top to bottom. Priority is P0 (next) → P1 (product holes) → P2 (roadmap
 
 5. [ ] Expand ingest beyond README/docs/skills/rules/workflows so code structure is actually indexed.
 
+6. [ ] Switch Jenkins Setup/Unit stages to `uv lock --check` and `uv sync --extra dev --locked`. Optional: a scheduled job that runs `uv lock --upgrade` and opens a PR. Docker image pins stay out of this job.
+
 ## Next
 
 ### P2 — later roadmap
